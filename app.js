@@ -6,14 +6,19 @@ var cookieParser = require('cookie-parser');
 var bodyParser = require('body-parser');
 
 var routes = require('./routes/index');
-var users = require('./routes/users');
+var query = require('./routes/query');
 
-var client = require('redis').createClient(process.env.REDIS_URL);
+
+var redis = require('redis');
+var client = redis.createClient(process.env.REDIS_URL);
 
 var app = express();
 
+app.client = client;
+
 // redis setup
-require('./redis/init').init(client);
+var redisInit = require('./redis/redis_init');
+redisInit.redisInit(client);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
@@ -28,7 +33,7 @@ app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes);
-app.use('/users', users);
+app.use('/query', query);
 
 // catch 404 and forward to error handler
 app.use(function(req, res, next) {
