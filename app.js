@@ -8,7 +8,12 @@ var bodyParser = require('body-parser');
 var routes = require('./routes/index');
 var users = require('./routes/users');
 
+var client = require('redis').createClient(process.env.REDIS_URL);
+
 var app = express();
+
+// redis setup
+require('./redis/init').init(client);
 
 // view engine setup
 app.set('views', path.join(__dirname, 'views'));
