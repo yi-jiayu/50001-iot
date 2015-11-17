@@ -10,8 +10,7 @@ var query = require('./routes/query');
 
 
 var redis = require('redis');
-console.log(process.env.REDIS_URL);
-var client = redis.createClient(process.env.REDIS_INSTANCE);
+var client = redis.createClient(process.env.REDIS_URL);
 
 var app = express();
 
