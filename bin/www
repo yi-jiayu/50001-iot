@@ -1,7 +1,5 @@
 #!/usr/bin/env node
 
-process.env.REDIS_INSTANCE = 'redis://h:pfi155bkqqr0a1ci7315g8mrcpl@ec2-54-83-9-36.compute-1.amazonaws.com:18979';
-
 /**
  * Module dependencies.
  */

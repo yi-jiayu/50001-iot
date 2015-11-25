@@ -1,32 +1,34 @@
 var redis = require('redis');
+var debug = require('debug')('50001-iot:db-setup');
 
 var hash = 'room-availability';
 var rooms = [
-    'b59.l2.meetingrm',
-    'b59.l3.meetingrm',
-    'b59.l4.recrm',
-    'b59.l9.meetingrm',
-    'b57.l2.meetingrm',
-    'b57.l3.meetingrm',
-    'b57.l4.recrm',
-    'b57.l9.meetingrm',
-    'b55.l2.meetingrm',
-    'b55.l3.meetingrm',
-    'b55.l4.recrm',
-    'b55.l9.meetingrm'
-]
+  '59.2.mr',
+  '59.3.qsr',
+  '59.4.rr',
+  '59.9.mr',
+  '57.2.mr',
+  '57.3.qsr',
+  '57.4.rr',
+  '57.9.mr',
+  '55.2.mr',
+  '55.3.qsr',
+  '55.4.rr',
+  '55.9.mr'
+];
 
 exports.redisInit = function (client) {
     rooms.forEach(function (room, index, array) {
-        client.hexists(hash, room, function(err, exists) {
-            console.log(room + ' exists; moving on');
+        client.hexists(hash, room, function (err, exists) {
             if (!exists) {
-                console.log(room + ' is not initialised; initialising now');
-                client.hset(hash, room, 'empty');
+                debug(room + ' is not initialised; initialising now');
+                client.hset(hash, room, 'Available');
+            } else {
+                debug(room + ' exists; moving on');
             }
         })
     });
-    client.hgetall(hash, function(err, response) {
-        console.log(response);
+    client.hgetall(hash, function (err, response) {
+        debug(response);
     });
 };

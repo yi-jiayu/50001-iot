@@ -1,0 +1,142 @@
+<dom-module id="rooms-status">
+
+  <template>
+    <style is="custom-style" include="shared-styles"></style>
+    <style>
+      /* CSS rules for your element */
+      paper-material {
+        margin: 16px;
+        padding: 16px;
+      }
+    </style>
+
+    <!-- local DOM for your element -->
+
+    <iron-ajax id="roomsStatusAjax"
+               auto
+               url="/api/getRoomsStatus"
+               last-response={{roomsObject}}
+               on-response="logResponse"></iron-ajax>
+
+    <paper-header-panel>
+      <paper-toolbar class="medium-tall">
+        <div class="title">Rooms Status</div>
+        <paper-icon-button icon="icons:refresh" on-tap="refreshRooms"></paper-icon-button>
+        <paper-tabs class="bottom fit" selected="{{selected}}">
+          <paper-tab>Status</paper-tab>
+          <paper-tab>Admin</paper-tab>
+        </paper-tabs>
+      </paper-toolbar>
+
+      <iron-pages selected="[[selected]]">
+        <div>
+          <template is="dom-repeat" items="[[rooms.available]]">
+            <paper-item class="layout horizontal justified">
+              <span>[[item]]</span>
+              <span>Available</span>
+            </paper-item>
+          </template>
+
+          <template is="dom-repeat" items="[[rooms.occupied]]">
+            <paper-item class="layout horizontal justified">
+              <span>[[item]]</span>
+              <span>Occupied</span>
+            </paper-item>
+          </template>
+        </div>
+        <div>
+          <paper-material class="layout horizontal end justified">
+            <paper-dropdown-menu label="Room" class="flex" id="debugRoomName">
+              <paper-menu class="dropdown-content">
+                <template is="dom-repeat" items="[[rooms.all]]">
+                  <paper-item>[[item]]</paper-item>
+                </template>
+              </paper-menu>
+            </paper-dropdown-menu>
+            <paper-dropdown-menu label="Status" id="debugRoomStatus">
+              <paper-menu class="dropdown-content">
+                <paper-item>Available</paper-item>
+                <paper-item>Occupied</paper-item>
+              </paper-menu>
+            </paper-dropdown-menu>
+            <paper-button on-tap="setRoomStatus">Set</paper-button>
+            <iron-ajax id="roomStatusAjax" url="/api/setRoomStatus"></iron-ajax>
+          </paper-material>
+        </div>
+      </iron-pages>
+
+    </paper-header-panel>
+  </template>
+
+  <script>
+    // element registration
+    Polymer({
+      is: 'rooms-status',
+
+      // add properties and methods on the element's prototype
+      properties: {
+        // declare properties for the element's public API
+        roomsObject: Object,
+        rooms: {
+          type: Object,
+          computed: 'parseRooms(roomsObject)'
+        },
+        selected: {
+          type: String,
+          value: '0'
+        }
+      },
+
+      logResponse: function() {
+        console.log(this.roomsObject);
+      },
+
+      parseRooms: function(roomsObject) {
+        var rooms = {};
+        var available = rooms.available = [];
+        var occupied = rooms.occupied = [];
+        var all = rooms.all = [];
+        for (var room in roomsObject) {
+          if (roomsObject.hasOwnProperty(room)) {
+            all.push(room);
+            var details = room.split('.');
+            var block = 'B' + details[0] + ' ';
+            var floor = 'L' + details[1] + ' ';
+            var type = '';
+            switch (details[2]) {
+              case 'mr':
+                type = 'Meeting Room';
+                break;
+              case 'rr':
+                type = 'Recreation Room';
+                break;
+              case 'qsr':
+                type = 'Quiet Study Room';
+                break;
+            }
+            var name = block + floor + type;
+            if (roomsObject[room] === 'a') {
+              available.push(name);
+            } else {
+              occupied.push(name);
+            }
+          }
+        }
+        return rooms;
+      },
+
+      setRoomStatus: function() {
+        var name = this.$.debugRoomName.value;
+        var status = this.$.debugRoomStatus.value;
+        status = status === 'Available' ? 'a' : 'o';
+        var roomStatusAjax = this.$.roomStatusAjax;
+        roomStatusAjax.params = {'room': name, 'status': status};
+        roomStatusAjax.generateRequest();
+      },
+
+      refreshRooms: function() {
+        this.$.roomsStatusAjax.generateRequest();
+      }
+    });
+  </script>
+</dom-module>
